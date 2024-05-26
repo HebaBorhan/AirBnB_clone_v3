@@ -16,6 +16,7 @@ def teardown_db(exception):
     """remove the current SQLAlchemy Session"""
     storage.close()
 
+
 @app.errorhandler(404)
 def nop(error):
     """404 error handler"""
