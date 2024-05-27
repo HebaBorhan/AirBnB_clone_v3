@@ -94,6 +94,7 @@ def places_search():
         data = request.get_json()
     except Exception:
         data = None
+    if data==None:
         abort(400, description="Not a JSON")
 
     if not data:
