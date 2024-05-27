@@ -10,7 +10,7 @@ from api.v1.views import app_views
 def get_states():
     """Get list of all State objects"""
     states = storage.all(State).values()
-    return jsonify([state.to_dict() for state in states]), 200
+    return jsonify([state.to_dict() for state in states])
 
 
 @app_views.route(
@@ -20,7 +20,7 @@ def get_state(state_id):
     state = storage.get(State, state_id)
     if state is None:
         abort(404)
-    return jsonify(state.to_dict()), 200
+    return jsonify(state.to_dict())
 
 
 @app_views.route(
@@ -38,11 +38,9 @@ def delete_state(state_id):
 @app_views.route('/states', methods=['POST'], strict_slashes=False)
 def create_state():
     """Creates a State object"""
-    if not request.json:
-        abort(400, description="Not a JSON")
-    if 'name' not in request.json:
-        abort(400, description="Missing name")
     data = request.get_json()
+    if not data:
+        abort(400, description="Not a JSON\n")
     new_state = State(**data)
     storage.new(new_state)
     storage.save()
@@ -55,9 +53,9 @@ def update_state(state_id):
     state = storage.get(State, state_id)
     if state is None:
         abort(404)
-    if not request.json:
-        abort(400, description="Not a JSON")
     data = request.get_json()
+    if not data:
+        abort(400, description="Not a JSON\n")
     for key, value in data.items():
         if key not in ['id', 'created_at', 'updated_at']:
             setattr(state, key, value)
