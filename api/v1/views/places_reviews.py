@@ -32,13 +32,13 @@ def create_review(place_id):
         data = None
     if not data:
         abort(400, description="Not a JSON")
-    if 'user_id' not in data.keys():
+    if 'user_id' not in data:
         abort(400, description="Missing user_id")
-    if 'text' not in data.keys():
-        abort(400, description="Missing text")
     user = storage.get(User, data['user_id'])
     if user is None:
         abort(404)
+    if 'text' not in data:
+        abort(400, description="Missing text")
     data.update({'place_id': place_id})
     new_review = Review(**data)
     storage.new(new_review)
