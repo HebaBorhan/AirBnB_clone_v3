@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """State objects handling RESTFul API actions"""
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, make_response
 from models import storage
 from models.state import State
 from api.v1.views import app_views
@@ -40,7 +40,9 @@ def create_state():
     """Creates a State object"""
     data = request.get_json()
     if not data:
-        abort(400, description="Not a JSON\n")
+        make_response('Not a JSON\n', 400)
+    if 'name' not in data.keys():
+        make_response('Missing name\n', 400)
     new_state = State(**data)
     storage.new(new_state)
     storage.save()
@@ -55,7 +57,7 @@ def update_state(state_id):
         abort(404)
     data = request.get_json()
     if not data:
-        abort(400, description="Not a JSON\n")
+        return make_response('Not a JSON\n', 400)
     for key, value in data.items():
         if key not in ['id', 'created_at', 'updated_at']:
             setattr(state, key, value)
