@@ -83,3 +83,40 @@ def update_place(place_id):
             setattr(place, key, value)
     storage.save()
     return jsonify(place.to_dict()), 200
+
+
+@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
+def places_search():
+    """Search for Place objects based on JSON request body"""
+    try:
+        data = request.get_json()
+    except Exception:
+        abort(400, description="Not a JSON")
+
+    if not data or not any(data.values()):
+        places = storage.all("Place").values()
+        return jsonify([place.to_dict() for place in places])
+
+    states = data.get("states", [])
+    cities = data.get("cities", [])
+    amenities = data.get("amenities", [])
+
+    places = []
+
+    for state_id in states:
+        state = storage.get("State", state_id)
+        if state:
+            for city in state.cities:
+                places.extend(city.places)
+
+    for city_id in cities:
+        city = storage.get("City", city_id)
+        if city:
+            places.extend(city.places)
+
+    if amenities:
+        places = [place for place in places if all(
+            amenity.id in [a.id for a in place.amenities]
+            for amenity in amenities)]
+
+    return jsonify([place.to_dict() for place in places])
