@@ -94,10 +94,9 @@ def places_search():
         data = request.get_json()
     except Exception:
         data = None
-    if not data:
         abort(400, description="Not a JSON")
 
-    if not any(data.values()):
+    if not data:
         places = storage.all("Place").values()
         return jsonify([place.to_dict() for place in places])
 
