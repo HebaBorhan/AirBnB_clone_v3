@@ -97,26 +97,37 @@ def places_search():
     if not data:
         abort(400, description="Not a JSON")
 
-    places = []
+    # If the JSON body is empty or each list of all keys are empty: retrieve all Place objects
+    if not data or (not data.get("states") and not data.get("cities") and not data.get("amenities")):
+        places = storage.all("Place").values()
+        return jsonify([place.to_dict() for place in places])
+
+    places = set()
+    states = data.get("states", [])
     cities = data.get("cities", [])
     amenities = data.get("amenities", [])
 
-    if "states" in data:
-        states = data.get("states", [])
-        for state_id in states:
-            state = storage.get("State", state_id)
-            for state in states:
-                for city in state.cities:
-                    places.extend(city.places)
+    # If states list is not empty, results should include all Place objects for each State id listed
+    for state_id in states:
+        state = storage.get("State", state_id)
+        if state:
+            for city in state.cities:
+                places.update(city.places)
 
+    # If cities list is not empty, results should include all Place objects for each City id listed
     for city_id in cities:
         city = storage.get("City", city_id)
         if city:
-            places.extend(city.places)
+            places.update(city.places)
 
+    # If amenities list is not empty, limit search results to only Place objects having all Amenity ids listed
     if amenities:
-        places = [place for place in places if all(
-            amenity.id in [a.id for a in place.amenities]
-            for amenity in amenities)]
+        amenity_ids = set(amenities)
+        filtered_places = []
+        for place in places:
+            place_amenities_ids = {amenity.id for amenity in place.amenities}
+            if amenity_ids.issubset(place_amenities_ids):
+                filtered_places.append(place)
+        places = filtered_places
 
     return jsonify([place.to_dict() for place in places])
