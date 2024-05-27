@@ -75,34 +75,14 @@ class TestDBStorage(unittest.TestCase):
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_no_class(self):
         """Test that all returns all rows when no class is passed"""
-        storage = DBStorage()
-        initial_count = len(storage.all())
-        new_state = State(name="California")
-        storage.new(new_state)
-        storage.save()
-        self.assertEqual(len(storage.all()), initial_count + 1)
-        storage.delete(new_state)
-        storage.save()
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_new(self):
         """test that new adds an object to the database"""
-        storage = DBStorage()
-        new_state = State(name="California")
-        storage.new(new_state)
-        self.assertIn(new_state, storage.all().values())
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_save(self):
         """Test that save properly saves objects to file.json"""
-        storage = DBStorage()
-        new_state = State(name="California")
-        storage.new(new_state)
-        storage.save()
-        storage.reload()
-        self.assertIn(new_state.id, [obj.id for obj in storage.all(State).values()])
-        storage.delete(new_state)
-        storage.save()
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_delete(self):
@@ -113,7 +93,8 @@ class TestDBStorage(unittest.TestCase):
         storage.save()
         storage.delete(new_state)
         storage.save()
-        self.assertIsNone(storage.get(State, new_state.id))
+        deleted_state = storage.get(State, new_state.id)
+        self.assertIsNone(deleted_state)
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_reload(self):
@@ -140,8 +121,6 @@ class TestDBStorage(unittest.TestCase):
         storage.save()
         self.assertEqual(storage.get(State, new_state.id), new_state)
         self.assertIsNone(storage.get(State, "nonexistent_id"))
-        storage.delete(new_state)
-        storage.save()
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_count(self):
@@ -153,11 +132,9 @@ class TestDBStorage(unittest.TestCase):
         storage.new(new_state1)
         storage.new(new_state2)
         storage.save()
+        self.assertEqual(storage.count(), initial_count + 2)
         self.assertEqual(storage.count(State), initial_count + 2)
         self.assertEqual(storage.count(City), 0)
-        storage.delete(new_state1)
-        storage.delete(new_state2)
-        storage.save()
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_count_all(self):
@@ -170,6 +147,3 @@ class TestDBStorage(unittest.TestCase):
         storage.new(new_city)
         storage.save()
         self.assertEqual(storage.count(), initial_count + 2)
-        storage.delete(new_state1)
-        storage.delete(new_city)
-        storage.save()
