@@ -5,6 +5,8 @@ from models import storage
 from models.city import City
 from models.place import Place
 from models.user import User
+from models.state import State
+from models.amenity import Amenity
 from api.v1.views import app_views
 
 
@@ -91,23 +93,21 @@ def places_search():
     try:
         data = request.get_json()
     except Exception:
+        data = None
+    if not data:
         abort(400, description="Not a JSON")
 
-    if not data or not any(data.values()):
-        places = storage.all("Place").values()
-        return jsonify([place.to_dict() for place in places])
-
-    states = data.get("states", [])
+    places = []
     cities = data.get("cities", [])
     amenities = data.get("amenities", [])
 
-    places = []
-
-    for state_id in states:
-        state = storage.get("State", state_id)
-        if state:
-            for city in state.cities:
-                places.extend(city.places)
+    if "states" in data:
+        states = data.get("states", [])
+        for state_id in states:
+            state = storage.get("State", state_id)
+            for state in states:
+                for city in state.cities:
+                    places.extend(city.places)
 
     for city_id in cities:
         city = storage.get("City", city_id)
