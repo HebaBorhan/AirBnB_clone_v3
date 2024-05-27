@@ -35,7 +35,8 @@ def create_city(state_id):
         abort(400, description="Missing name")
     data.update({'state_id': state_id})
     new_city = City(**data)
-    new_city.save()
+    storage.new(new_city)
+    storage.save()
     return jsonify(new_city.to_dict()), 201
 
 
@@ -74,5 +75,5 @@ def update_city(city_id):
     for key, value in data.items():
         if key not in ['id', 'state_id', 'created_at', 'updated_at']:
             setattr(city, key, value)
-    city.save()
+    storage.save()
     return jsonify(city.to_dict()), 200
