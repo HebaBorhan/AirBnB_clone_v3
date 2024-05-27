@@ -43,6 +43,7 @@ def delete_place_amenity(place_id, amenity_id):
     storage.save()
     return jsonify({}), 200
 
+
 @app_views.route('/places/<place_id>/amenities/<amenity_id>',
                  methods=['POST'], strict_slashes=False)
 def link_place_amenity(place_id, amenity_id):
